@@ -8,7 +8,7 @@
 			icon-right-color="input-background-color-active"
 			icon-left="search"
 		></v-input>
-		<div v-show="searchText.length === 0" class="icons-view">
+		<div v-show="searchText.length <= 1" class="icons-view">
 			<details
 				v-for="(icongroup, groupname) in icons"
 				:key="groupname"
@@ -30,7 +30,7 @@
 				</div>
 			</details>
 		</div>
-		<div v-if="searchText.length > 0" class="search-view">
+		<div v-if="searchText.length > 1" class="search-view">
 			<button
 				v-for="icon in filteredArray"
 				:key="icon"
@@ -49,6 +49,7 @@
 <script>
 import mixin from '@directus/extension-toolkit/mixins/interface';
 import icons from './icons.json';
+import tags from './tags.json';
 import { flatten } from 'lodash';
 
 export default {
@@ -63,11 +64,18 @@ export default {
 		icons() {
 			return icons;
 		},
+		tags() {
+			return tags.flatMap(icon => {
+				return icon.tags.map(tag => [tag, icon.name]);
+			});
+		},
 		iconsArray() {
 			return flatten(Object.values(this.icons));
 		},
 		filteredArray() {
-			return this.iconsArray.filter(icon => icon.includes(this.searchText.toLowerCase()));
+			const query = this.searchText.toLowerCase();
+			const matchingTags = this.tags.filter(icon => icon[0].includes(query));
+			return new Set(matchingTags.map(icon => icon[1])).values();
 		}
 	},
 	methods: {
