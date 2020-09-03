@@ -160,7 +160,7 @@ export default {
 
 			return Promise.all([
 				this.$api.getItems(collection, params),
-				this.value ? this.$api.getItem(collection, this.valuePK) : null
+				this.value ? this.$api.getItem(collection, this.valuePK, { fields: '*.*' }) : null
 			])
 				.then(([{ meta, data: items }, singleRes]) => {
 					if (singleRes) {

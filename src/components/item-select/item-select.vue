@@ -21,7 +21,7 @@
 
 				<div class="select">
 					<select v-model="sortField">
-						<option v-for="field in fields" :key="field" :value="field">
+						<option v-for="field in sortableFields" :key="field" :value="field">
 							{{ $helpers.formatField(field, collection) }}
 						</option>
 					</select>
@@ -243,7 +243,13 @@ export default {
 			return this.fields.map(fieldName => {
 				return this.$store.state.collections[this.collection].fields[fieldName];
 			});
-		}
+		},
+
+		sortableFields(){
+			return this.fieldsWithInfo
+				.filter(field=>field.type !== 'TRANSLATION')
+				.map(field=>field.field);
+		},
 	},
 
 	// Re-fetch the items whenever the collection / filters prop changes
@@ -267,7 +273,9 @@ export default {
 
 	// Fetch the items on first load of the interface
 	created() {
-		this.sortField = this.fields[0];
+		if(this.sortableFields.length){
+			this.sortField = this.sortableFields[0];
+		}
 
 		this.fetchItems();
 

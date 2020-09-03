@@ -306,7 +306,7 @@ export default {
 
 	methods: {
 		async getInitialValue() {
-			const fields = [this.junctionPrimaryKey, this.relation.junction_field + '.*'];
+			const fields = [this.junctionPrimaryKey, this.relation.junction_field + '.*.*'];
 			const response = await this.$api.getItems(this.relation.collection_many.collection, {
 				fields,
 				filter: {

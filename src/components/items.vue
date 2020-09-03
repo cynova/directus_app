@@ -454,7 +454,7 @@ export default {
 					return availableFields.includes(field);
 				});
 
-				params.fields = params.fields.map(field => `${field}.*`);
+				params.fields = params.fields.map(field => `${field}.*.*`);
 
 				// Make sure to always fetch the primary key. This is needed to generate the links to the
 				// detail pages
@@ -491,7 +491,7 @@ export default {
 
 				params.fields = params.fields.join(',');
 			} else {
-				params.fields = '*.*';
+				params.fields = '*.*.*';
 			}
 
 			if (params.sort) {

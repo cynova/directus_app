@@ -27,7 +27,7 @@ export default {
 				[languageField]: this.systemLanguage.split('-')[0]
 			});
 
-			return fullMatch || partialMatch;
+			return fullMatch || partialMatch || this.value[0];
 		},
 		displayValue() {
 			if (!this.value || this.value.length === 0) {
