@@ -49,7 +49,6 @@
 <script>
 import mixin from '@directus/extension-toolkit/mixins/interface';
 import icons from './icons.json';
-import tags from './tags.json';
 import { flatten } from 'lodash';
 
 export default {
@@ -57,17 +56,13 @@ export default {
 	data() {
 		return {
 			searchText: '',
-			openIconGroups: {}
+			openIconGroups: {},
+			tags: []
 		};
 	},
 	computed: {
 		icons() {
 			return icons;
-		},
-		tags() {
-			return tags.flatMap(icon => {
-				return icon.tags.map(tag => [tag, icon.name]);
-			});
 		},
 		iconsArray() {
 			return flatten(Object.values(this.icons));
@@ -82,6 +77,16 @@ export default {
 		handleIconGroupToggle(groupname) {
 			this.$set(this.openIconGroups, groupname, !this.openIconGroups[groupname]);
 		}
+	},
+	async mounted() {
+		const { tags } = await import('./tags');
+		this.$set(
+			this,
+			'tags',
+			Array.prototype.flatMap.call(tags, icon => {
+				return icon.tags.map(tag => [tag, icon.name]);
+			})
+		);
 	}
 };
 </script>
