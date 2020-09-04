@@ -246,7 +246,7 @@ export default {
 			this.comment = '';
 		},
 		getRelativeTimeFromNow(date) {
-			return formatDistance(new Date(), date, { addSuffix: true });
+			return formatDistance(date, new Date(), { addSuffix: true });
 		}
 	}
 };
