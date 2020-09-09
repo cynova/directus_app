@@ -839,7 +839,9 @@ export default {
 				.then(({ activity, revisions }) => {
 					return {
 						activity: activity.map(act => {
-							const date = new Date(act.action_on);
+							const date = new Date(
+								/Z$/.test(act.action_on) ? act.action_on : act.action_on + 'Z'
+							);
 							let name;
 
 							if (act.action_by) {
