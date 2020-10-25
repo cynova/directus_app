@@ -133,13 +133,15 @@ export default {
           color: ${cssVar('--input-text-color')};
           background-color: ${cssVar('--input-background-color')};
           margin: 20px;
-          font-family: 'Roboto', sans-serif;
+          font-family: ${cssVar('--family-sans-serif')};
+		  font-size: ${cssVar('--type-body-sans-size')};
+		  line-height: ${cssVar('--type-body-sans-line-height')};
           -webkit-font-smoothing: antialiased;
           text-rendering: optimizeLegibility;
           -moz-osx-font-smoothing: grayscale;
         }
         h1 {
-          font-family: 'Merriweather', serif;
+          /*font-family: 'Merriweather', serif;*/
           font-size: 44px;
           line-height: 52px;
           font-weight: 300;
@@ -181,9 +183,9 @@ export default {
           margin-bottom: 0;
         }
         p {
-          font-family: 'Merriweather', serif;
+          /*font-family: 'Merriweather', serif;*/
           font-size: 16px;
-          line-height: 32px;
+          line-height: 24px;
           margin-top: 20px;
           margin-bottom: 20px;
         }
@@ -191,7 +193,7 @@ export default {
           color: #546e7a;
         }
         ul,ol {
-          font-family: 'Merriweather', serif;
+          /*font-family: 'Merriweather', serif;*/
           font-size: 18px;
           line-height: 34px;
           margin: 24px 0;
@@ -224,7 +226,7 @@ export default {
           overflow: auto;
         }
         blockquote {
-          font-family: 'Merriweather', serif;
+          /*font-family: 'Merriweather', serif;*/
           font-size: 18px;
           line-height: 34px;
           border-left: 2px solid #546e7a;

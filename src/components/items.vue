@@ -98,6 +98,10 @@ export default {
 		links: {
 			type: Boolean,
 			default: false
+		},
+		showDeleted: {
+			type: Boolean,
+			default: false
 		}
 	},
 	data() {
@@ -184,6 +188,10 @@ export default {
 			}
 		},
 		searchQuery(newVal, oldVal) {
+			if (isEqual(newVal, oldVal)) return;
+			this.getItems();
+		},
+		showDeleted(newVal, oldVal) {
 			if (isEqual(newVal, oldVal)) return;
 			this.getItems();
 		}
@@ -442,6 +450,10 @@ export default {
 				limit: this.$store.state.settings.values.default_limit,
 				offset: this.$store.state.settings.values.default_limit * this.items.page
 			};
+
+			if (this.showDeleted) {
+				params.status = '*';
+			}
 
 			Object.assign(params, this.viewQuery);
 

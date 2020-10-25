@@ -1,18 +1,32 @@
 <template>
 	<div class="v-diff">
-		<div v-for="{ field, before, after } in changes" :key="field" class="change">
+		<div v-for="{ field, diff } in diffs" :key="field" class="change">
 			<p>{{ $helpers.formatTitle(field) }}</p>
 			<div class="diff">
-				<div :class="{ empty: !before }" class="before">
-					{{ before || '--' }}
-				</div>
-				<div :class="{ empty: !after }" class="after">{{ after || '--' }}</div>
+				<span
+					v-for="(part, index) in diff"
+					:key="index"
+					:class="{ added: part.added, removed: part.removed }"
+				>
+					<span v-if="part.added || part.removed || part.value.length < 30 || expanded">
+						{{ part.value }}
+					</span>
+					<span v-else>
+						<span>{{ part.value.substring(0, 10) }}</span>
+						<div @click="expanded = true" class="compacted"><div /></div>
+						<span>
+							{{ part.value.substring(part.value.length - 10, part.value.length) }}
+						</span>
+					</span>
+				</span>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script>
+import { diffWordsWithSpace } from 'diff';
+
 export default {
 	name: 'VDiff',
 	props: {
@@ -20,6 +34,28 @@ export default {
 			type: Object,
 			required: true
 		}
+	},
+	computed: {
+		diffs() {
+			return Object.keys(this.changes).map(key => {
+				let { field, before, after } = this.changes[key];
+				if (before === null || typeof before === 'undefined') {
+					before = '';
+				}
+				if (after === null || typeof after === 'undefined') {
+					after = '';
+				}
+				return {
+					field,
+					diff: diffWordsWithSpace(String(before), String(after))
+				};
+			});
+		}
+	},
+	data() {
+		return {
+			expanded: false
+		};
 	}
 };
 </script>
@@ -38,72 +74,47 @@ export default {
 		width: 100%;
 		border-radius: var(--border-radius);
 		overflow: hidden;
-
-		> div {
-			width: 100%;
-			padding: 4px 20px 4px 4px;
-			font-size: 13px;
+		font-size: 13px;
+		word-break: break-word;
+		background-color: var(--page-background-color);
+		padding: 2px;
+		.added,
+		.removed {
+			margin: 0 2px;
+		}
+		.added {
+			background-color: var(--success);
+		}
+		.removed {
+			background-color: var(--danger);
 		}
 	}
 
-	.before {
-		position: relative;
-		color: var(--danger);
-		background-color: var(--page-background-color);
-		border-bottom: 2px solid var(--sidebar-background-color);
-		max-height: 300px;
-		overflow: auto;
-		&:after {
-			content: 'close';
-			position: absolute;
-			right: 0px;
-			top: 50%;
-			transform: translateY(-50%);
-			font-family: 'Material Icons';
-			font-feature-settings: 'liga';
-			color: var(--danger);
-			display: inline-block;
-			vertical-align: middle;
-			margin: 0 5px;
-		}
-	}
-
-	.after {
-		position: relative;
-		color: var(--success);
-		background-color: var(--page-background-color);
-		max-height: 300px;
-		overflow: auto;
-		&:after {
-			content: 'check';
-			position: absolute;
-			right: 0px;
-			top: 50%;
-			transform: translateY(-50%);
-			font-family: 'Material Icons';
-			font-feature-settings: 'liga';
-			color: var(--success);
-			display: inline-block;
-			vertical-align: middle;
-			margin: 0 5px;
-		}
-	}
-
-	.empty {
-		color: var(--note-text-color);
-		background-color: var(--page-background-color);
-		&:after {
-			content: 'block';
-			position: absolute;
-			right: 0px;
-			top: 50%;
-			transform: translateY(-50%);
-			font-family: 'Material Icons';
-			font-feature-settings: 'liga';
+	.compacted {
+		cursor: pointer;
+		&:hover {
 			color: var(--note-text-color);
-			display: inline-block;
-			vertical-align: middle;
-			margin: 0 5px;
+		}
+		div {
+			position: relative;
+			&,
+			&:before,
+			&:after {
+				content: '';
+				width: 5px;
+				height: 5px;
+				border-radius: 3px;
+				background-color: currentColor;
+			}
+			&:before {
+				position: absolute;
+				left: 12px;
+			}
+			&:after {
+				position: absolute;
+				right: 12px;
+			}
+			margin: 8px auto;
 		}
 	}
 }

@@ -140,6 +140,19 @@
 			/>
 		</portal>
 
+		<portal v-if="confirmOverwriteForeignChanges" to="modal">
+			<v-confirm
+				:message="$t('user_change_detected_warning', foreignChange)"
+				:confirm-text="$t('overwrite')"
+				@confirm="
+					confirmOverwriteForeignChanges = false;
+					foreignChange = null;
+					save('leave');
+				"
+				@cancel="confirmOverwriteForeignChanges = false"
+			/>
+		</portal>
+
 		<portal v-if="revertActivity" to="modal">
 			<v-modal
 				:title="$t('preview_and_revert')"
@@ -243,7 +256,14 @@ export default {
 			revertActivity: null,
 			reverting: false,
 
-			formKey: shortid.generate()
+			formKey: shortid.generate(),
+			beforeunload: null,
+
+			activitySinceMounted: [],
+			lastActivityId: 0,
+			changeWatcher: null,
+			foreignChange: null,
+			confirmOverwriteForeignChanges: false
 		};
 	},
 	computed: {
@@ -558,6 +578,18 @@ export default {
 			}
 
 			return null;
+		},
+		relations() {
+			const relations = {};
+			Object.keys(this.fields).forEach(key => {
+				const { collection, field, type } = this.fields[key];
+
+				if (type.toLowerCase() === 'm2o')
+					relations[key] = this.$store.getters.m2o(collection, field);
+				if (['o2m', 'translation'].includes(type.toLowerCase()))
+					relations[key] = this.$store.getters.o2m(collection, field);
+			});
+			return relations;
 		}
 	},
 	watch: {
@@ -587,10 +619,24 @@ export default {
 
 		this.$helpers.mousetrap.bind('mod+s', handler);
 		this.formtrap = this.$helpers.mousetrap(this.$refs.form.$el).bind('mod+s', handler);
+		this.beforeunload = event => {
+			if (this.$store.getters.editing === false) {
+				return;
+			}
+			event.preventDefault();
+			event.returnValue = '';
+			return '';
+		};
+		window.addEventListener('beforeunload', this.beforeunload);
+
+		this.startForeignChangeWatcher();
 	},
 	beforeDestroy() {
 		this.$helpers.mousetrap.unbind('mod+s');
 		this.formtrap.unbind('mod+s');
+		window.removeEventListener('beforeunload', this.beforeunload);
+
+		clearInterval(this.changeWatcher);
 	},
 	methods: {
 		stageValue({ field, value }) {
@@ -644,6 +690,12 @@ export default {
 				});
 		},
 		save(method) {
+			if (this.foreignChange) {
+				this.confirmOverwriteForeignChanges = true;
+				return;
+			}
+			clearInterval(this.changeWatcher);
+
 			this.saving = true;
 
 			if (method === 'copy') {
@@ -753,6 +805,7 @@ export default {
 
 					if (method === 'stay') {
 						this.fetchActivity();
+						this.startForeignChangeWatcher();
 
 						if (this.newItem) {
 							const primaryKey = savedValues[this.primaryKeyField];
@@ -840,7 +893,7 @@ export default {
 					return {
 						activity: activity.map(act => {
 							const date = new Date(
-								/Z$/.test(act.action_on) ? act.action_on : act.action_on + 'Z'
+								/(\+|Z$)/.test(act.action_on) ? act.action_on : act.action_on + 'Z'
 							);
 							let name;
 
@@ -941,7 +994,7 @@ export default {
 					this.revertActivity = null;
 
 					return Promise.all([
-						this.$api.getItem(this.collection, this.primaryKey),
+						this.$api.getItem(this.collection, this.primaryKey, { status: '*' }),
 						this.fetchActivity()
 					]);
 				})
@@ -958,6 +1011,46 @@ export default {
 						error
 					});
 				});
+		},
+		async startForeignChangeWatcher() {
+			clearInterval(this.changeWatcher);
+			const activity = await this.$api.getActivity({
+				sort: '-id',
+				fields: ['id'],
+				single: true
+			});
+			this.lastActivityId = activity.data.id;
+			this.changeWatcher = setInterval(this.checkForeignChanges, 3000);
+		},
+		async checkForeignChanges(silent) {
+			try {
+				const activity = await this.$api.getActivity({
+					filter: {
+						id: {
+							gt: this.lastActivityId
+						},
+						collection: {
+							eq: this.collection
+						},
+						item: {
+							in: this.primaryKey.split(',')
+						}
+					},
+					single: true,
+					fields: 'action_by.first_name,action_by.last_name'
+				});
+				const { first_name, last_name } = activity.data.action_by;
+				if (!this.saving) {
+					//prevent race condition where user is actually the one saving
+					this.$notify({
+						title: this.$t('user_change_detected_warning', { first_name, last_name }),
+						color: 'red',
+						iconMain: 'error'
+					});
+				}
+				clearInterval(this.changeWatcher);
+				this.foreignChange = { first_name, last_name };
+			} catch (e) {} //eslint-disable-line no-empty
 		}
 	},
 	beforeRouteEnter(to, from, next) {
@@ -987,7 +1080,7 @@ export default {
 		store.dispatch('loadingStart', { id });
 
 		return api
-			.getItem(collection, primaryKey)
+			.getItem(collection, primaryKey, { status: '*' })
 			.then(res => res.data)
 			.then(item => {
 				store.dispatch('loadingFinished', id);
@@ -1056,7 +1149,7 @@ export default {
 		this.$store.dispatch('loadingStart', { id });
 
 		return this.$api
-			.getItem(collection, primaryKey)
+			.getItem(collection, primaryKey, { status: '*' })
 			.then(res => res.data)
 			.then(item => {
 				this.$store.dispatch('loadingFinished', id);

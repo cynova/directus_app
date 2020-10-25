@@ -303,6 +303,7 @@ export default {
 
 	.content {
 		margin-left: 10px;
+		max-width: calc(100% - 10px);
 		flex-grow: 1;
 
 		.name {

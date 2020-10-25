@@ -13,6 +13,7 @@ export function getPermissions({ commit, rootState }) {
 	const defaultPerm = admin ? defaultFull : defaultNone;
 
 	const permissions = mapValues(collections, collection => {
+		console.log(collection.collection, collection.status_mapping);
 		if (collection.status_mapping) {
 			return {
 				statuses: mapValues(collection.status_mapping, () => defaultPerm),

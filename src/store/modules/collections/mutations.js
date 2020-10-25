@@ -22,7 +22,7 @@ const mutations = {
 	},
 	[SET_COLLECTIONS](state, data) {
 		const collections = mapValues(keyBy(data, 'collection'), info => {
-			const statusField = find(info.fields, { interface: 'status' });
+			const statusField = find(info.fields, { type: 'status' });
 			let status_mapping =
 				statusField && statusField.options && statusField.options.status_mapping;
 

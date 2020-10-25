@@ -33,11 +33,14 @@
 				v-show="selection && selection.length === 0 && !emptyCollection"
 				:filters="filters"
 				:search-query="searchQuery"
+				:show-deleted="showDeleted"
 				:field-names="filterableFieldNames"
 				:collection-name="collection.name"
 				:placeholder="resultCopy"
+				:enableShowDeleted="true"
 				@filter="updatePreferences('filters', $event)"
 				@search="updatePreferences('search_query', $event)"
+				@show-deleted="showDeleted = $event"
 				@clear-filters="clearFilters"
 			/>
 			<template slot="buttons">
@@ -85,6 +88,7 @@
 			:view-type="viewType"
 			:view-options="viewOptions"
 			:selection="!activity ? selection : null"
+			:show-deleted="showDeleted"
 			links
 			@fetch="setMeta"
 			@options="setViewOptions"
@@ -182,7 +186,8 @@ export default {
 			preferences: null,
 			confirmRemove: false,
 			bookmarkModal: false,
-			notFound: false
+			notFound: false,
+			showDeleted: false
 		};
 	},
 	computed: {
@@ -584,6 +589,7 @@ export default {
 			this.updatePreferences('view_options', newViewOptions);
 		},
 		updatePreferences(key, value, combine = false) {
+			console.log('updatePreferences', ...arguments);
 			if (combine) {
 				value = {
 					...this.preferences[key],

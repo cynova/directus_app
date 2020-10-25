@@ -48,6 +48,14 @@
 					/>
 				</div>
 
+				<v-checkbox
+					v-if="enableShowDeleted"
+					:inputValue="showDeleted"
+					@change="$emit('show-deleted', $event)"
+					label="Show Deleted Items"
+					color="white"
+				/>
+
 				<div v-for="(filter, i) in filters" :key="i" class="field">
 					<invisible-label :html-for="`filter-${i}`">
 						{{ fields[filter.field] }} {{ operators[filter.operator] }}
@@ -132,6 +140,14 @@ export default {
 		placeholder: {
 			type: String,
 			default: null
+		},
+		enableShowDeleted: {
+			type: Boolean,
+			default: false
+		},
+		showDeleted: {
+			type: Boolean,
+			default: false
 		}
 	},
 	data() {
@@ -234,7 +250,7 @@ export default {
 	left: 0;
 	z-index: 19;
 	padding: 20px;
-	color: var(--blue-grey-900);
+	color: var(--page-text-color);
 	transform-origin: top;
 	border-bottom: 2px solid var(--input-border-color);
 	border-radius: 0 0 var(--border-radius) var(--border-radius);

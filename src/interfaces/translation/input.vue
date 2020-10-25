@@ -108,13 +108,16 @@ export default {
 			});
 
 			if (existingChanges) {
-				this.relationalChanges = this.relationalChanges.map(update => {
-					if (update[this.options.languageField] === this.currentLanguage) {
-						return merge({}, update, { [field]: value });
-					}
-
-					return update;
-				});
+				this.$set(
+					this,
+					'relationalChanges',
+					this.relationalChanges.map(update => {
+						if (update[this.options.languageField] === this.currentLanguage) {
+							return { ...update, [field]: value };
+						}
+						return update;
+					})
+				);
 			} else {
 				const update = {
 					[field]: value,
@@ -127,8 +130,7 @@ export default {
 					const relatedPrimaryKey = this.existing[primaryKeyField];
 					update[primaryKeyField] = relatedPrimaryKey;
 				}
-
-				this.relationalChanges = [...this.relationalChanges, update];
+				this.$set(this, 'relationalChanges', [...this.relationalChanges, update]);
 			}
 		},
 		emitValue(value) {
@@ -148,7 +150,7 @@ export default {
 					const after = value.find(i => i[languageField] === languageKey);
 
 					if (after) {
-						return merge({}, before, after);
+						return { ...before, ...after };
 					}
 					return before;
 				})

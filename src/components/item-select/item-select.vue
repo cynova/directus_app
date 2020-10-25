@@ -245,11 +245,11 @@ export default {
 			});
 		},
 
-		sortableFields(){
+		sortableFields() {
 			return this.fieldsWithInfo
-				.filter(field=>field.type !== 'TRANSLATION')
-				.map(field=>field.field);
-		},
+				.filter(field => field.type !== 'TRANSLATION')
+				.map(field => field.field);
+		}
 	},
 
 	// Re-fetch the items whenever the collection / filters prop changes
@@ -273,7 +273,7 @@ export default {
 
 	// Fetch the items on first load of the interface
 	created() {
-		if(this.sortableFields.length){
+		if (this.sortableFields.length) {
 			this.sortField = this.sortableFields[0];
 		}
 

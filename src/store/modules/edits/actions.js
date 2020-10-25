@@ -56,7 +56,8 @@ export function save({ commit, state, rootState }, overrides) {
 
 	return api
 		.updateItem(info.collection, info.primaryKey, info.values, {
-			fields: '*.*.*.*'
+			fields: '*.*.*.*',
+			status: '*'
 		})
 		.then(res => {
 			commit(ITEM_CREATED);

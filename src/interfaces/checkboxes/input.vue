@@ -20,6 +20,7 @@
 			</template>
 
 			<v-checkbox
+				class="checkbox"
 				v-else
 				:id="choice.id"
 				v-tooltip="choice.value"
